@@ -1,30 +1,9 @@
 # Unlocking-Consumer-Insights-with-SQL-A-Foodie-Fi-s-Subscription-Data
 
 
-
-Search
-Write
-
-Zunaira Marwat
-Get unlimited access to the best of Medium for less than $1/week.
-Become a member
-
-
-“Unlocking Consumer Insights with SQL: A Dive into Foodie-Fi’s Subscription Data”
-Zunaira Marwat
-Zunaira Marwat
-
-60 min read
-·
-Just now
-
-
-
-
-
 Welcome to the world of data-driven gastronomy! In today’s digital age, where every click and tap generates a trail of valuable information, companies are leveraging the power of SQL to unlock deep insights into consumer behavior. Let's explore the insights from Foodie-Fi’s subscription data and analyze different queries.
 
-Schema Design
+**Schema Design**
 The Schema of the Foodie-Fi’s subscription data is as follows:
 
 CREATE TABLE plans (
@@ -2705,16 +2684,19 @@ VALUES
   ('1000', '4', '2020-06-04');
 
   
-1. How many customers has Foodie-Fi ever had?
+**1. How many customers has Foodie-Fi ever had?**
 
-Explanation:
+**Explanation:**
 This query retrieves the total number of customers Foodie-Fi has ever had.
 It does so by counting the number of rows in the subscriptionstable, where each row represents a unique customer subscription by using Distint function.
 
-Select count(Distinct(customer_id)) as total_subscribed_people from subscriptions;
+_Select count(Distinct(customer_id)) as total_subscribed_people from subscriptions;_
 
-3. What is the monthly distribution of trial plan start_date values for our dataset? Use the start of the month as the group by value.
-Explanation:
+
+
+**2. What is the monthly distribution of trial plan start_date values for our dataset? Use the start of the month as the group by value.**
+
+**Explanation:**
 SELECT: Indicates that we are selecting data from the database.
 DATE_FORMAT(start_date, ‘%Y-%m-01’) AS month_start: Formats the start_date to only include the year and month (set to the first day of the month) and renames it as month_start.
 COUNT(*) AS num_trials_started: Counts the number of trial plan subscriptions started in each month.
@@ -2722,34 +2704,44 @@ FROM subscriptions: Specifies the table from which we are retrieving data, in th
 WHERE plan_id IN (SELECT plan_id FROM plans WHERE plan_type = ‘trial’): Filters the data to include only subscriptions with a plan type of ‘trial’.
 GROUP BY month_start: Groups the data by the formatted start_date, aggregating the counts for each month.
 ORDER BY month_start: Orders the results by the month start date in ascending order.
-SELECT DATE_FORMAT(start_date, '%Y-%m-01') AS month_start,
+
+
+_SELECT DATE_FORMAT(start_date, '%Y-%m-01') AS month_start,
        COUNT(*) AS num_trials_started
 FROM subscriptions
 WHERE plan_id IN (SELECT plan_id FROM plans WHERE plan_name = 'trial')
 GROUP BY month_start
-ORDER BY month_start
-4. What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name.
-Explanation:
+ORDER BY month_start_
+
+
+
+**3. What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name.**
+
+**Explanation:**
 SELECT plan_name, COUNT(*) AS num_trials_started: Specifies the columns to select from the database. Here, we’re selecting the plan name and the count of trial plan subscriptions started after December 2020.
 FROM plans JOIN subscriptions ON plans.plan_id = subscriptions.plan_id: Indicates the tables from which the data is being retrieved and specifies how they are joined. This query joins the “plans” table with the “subscriptions” table based on the common column plan_id.
 WHERE subscriptions.start_date > “2020–12–01”: Filters the data to include only subscriptions that started after December 2020.
 GROUP BY plan_name: Groups the results by the name of the trial plan, aggregating the counts for each plan.
-SELECT plan_name, COUNT(*) AS num_trials_started
+
+_SELECT plan_name, COUNT(*) AS num_trials_started
 FROM plans
 JOIN subscriptions ON plans.plan_id = subscriptions.plan_id
 where subscriptions.start_date > "2020-12-01"
-GROUP BY plan_name;
-5. What is the customer count and percentage of customers who have churned, rounded to 1 decimal place?
-Explanation:
+GROUP BY plan_name;_
+
+
+
+**4. What is the customer count and percentage of customers who have churned, rounded to 1 decimal place?**
+
+**Explanation**:
 This query calculates the number of customers who have churned from the dataset.
 It counts the occurrences where the plan_name is ‘churn’ in the subscriptions table.
 With Clause (Common Table Expressions — CTEs):
-
 churn_per: Calculates the count of churned subscriptions. It selects the count of subscriptions where the plan name is "churn"
 total_subs: Calculates the total count of subscriptions in the dataset.
 Main Query:
 
-SELECT round (((churn_count * 100) / total_count),0) AS churn_percentage: Calculates the churn percentage by dividing the count of churned subscriptions by the total count of subscriptions, multiplying by 100 to get the percentage, and rounding the result to the nearest whole number.
+_SELECT round (((churn_count * 100) / total_count),0) AS churn_percentage: Calculates the churn percentage by dividing the count of churned subscriptions by the total count of subscriptions, multiplying by 100 to get the percentage, and rounding the result to the nearest whole number.
 FROM churn_per, total_subs: Retrieves data from the two CTEs, providing the counts needed to calculate the churn percentage.
 WITH churn_per AS (
     SELECT COUNT(*) AS churn_count
@@ -2764,9 +2756,13 @@ total_subs AS (
 SELECT 
     churn_count AS churn_count,
     ROUND((churn_count * 100.0) / total_count, 1) AS churn_percentage
-FROM churn_per, total_subs;
-5. How many customers have churned straight after their initial free trial — what percentage is this rounded to the nearest whole number?
-Explanation:
+FROM churn_per, total_subs;_
+
+
+
+**5. How many customers have churned straight after their initial free trial — what percentage is this rounded to the nearest whole number?**
+
+**Explanation:**
 WITH count_of_customers: Defines a common table expression (CTE) named count_of_customers.
 SELECT COUNT(*) AS num_customers_with_both_plans: Counts the number of customers who have both ‘trial’ and ‘churn’ plans.
 FROM: Specifies the inner subquery.
@@ -2778,7 +2774,9 @@ HAVING COUNT(DISTINCT s.plan_id) = 2: Ensures that each customer has exactly two
 AND MIN(CASE WHEN p.plan_name = ‘trial’ THEN s.start_date END) < MIN(CASE WHEN p.plan_name = ‘churn’ THEN s.start_date END): Checks if the start_date of the ‘trial’ plan is earlier than the start_date of the ‘churn’ plan for each customer.
 SELECT ROUND((num_customers_with_both_plans * 100.0) / (SELECT COUNT(DISTINCT(customer_id)) FROM subscriptions), 0) AS churn_percentage: Calculates the churn percentage by dividing the count of customers with both plans by the total count of distinct customer_ids in the subscriptions table and rounds it to the nearest whole number.
 FROM count_of_customers: Specifies the source of data for the main query, which is the count_of_customers CTE.
-WITH count_of_customers AS (
+
+
+_WITH count_of_customers AS (
     SELECT COUNT(*) AS num_customers_with_both_plans
     FROM (
         SELECT customer_id
@@ -2791,9 +2789,15 @@ WITH count_of_customers AS (
     ) AS customers_with_both_plans
 )
 SELECT ROUND((num_customers_with_both_plans * 100.0) / (SELECT COUNT(Distinct(customer_id)) FROM subscriptions), 0) AS churn_percentage
-FROM count_of_customers;
-6. What are the number and percentage of customer plans after their initial free trial?
-Explanation:
+FROM count_of_customers;_
+
+
+
+
+
+**6. What are the number and percentage of customer plans after their initial free trial?**
+
+**Explanation:**
 SELECT: Indicates the selection of data from the database.
 p.plan_name: Selects the plan_name column from the plans table.
 COUNT(DISTINCT customer_id): Counts the distinct customer_id values.
@@ -2803,7 +2807,9 @@ FROM subscriptions s: Specifies the subscriptions table and assigns it an alias 
 JOIN plans p ON s.plan_id = p.plan_id: Joins the subscriptions table with the plans table based on the plan_id column.
 JOIN (SELECT COUNT(DISTINCT customer_id) AS total_count FROM subscriptions) AS total_customers: Joins a subquery that calculates the total count of distinct customer_id values from the subscriptions table.
 GROUP BY p.plan_name: Groups the result set by the plan_name column.
-SELECT 
+
+
+_SELECT 
     p.plan_name,
     ROUND((COUNT(DISTINCT customer_id) * 100.0) / total_customers.total_count, 1) AS percentage
 FROM 
@@ -2817,22 +2823,29 @@ JOIN (
         subscriptions
 ) AS total_customers
 GROUP BY 
-    p.plan_name;
-7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020–12–31?
-Explanation:
-CTE (Common Table Expression):
+    p.plan_name;_
 
+
+
+
+    
+**7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020–12–31?**
+
+**Explanation:**
+
+CTE (Common Table Expression):
 Named LatestData, it retrieves records from the subscriptions table.
 Utilizes ROW_NUMBER() function to assign a sequential number to each record within a partition defined by customer_id, ordered by start_date in descending order.
 Filters records where start_date is on or before December 31, 2020.
-Main Query:
 
+Main Query:
 Selects plan_name from the plans table and counts the number of unique customer_id.
 Calculates the percentage of customers based on the count of unique customer_id.
 Joins the LatestData CTE with the plans table using the plan_id.
 Filters rows where rn (row number) equals 1, ensuring only the latest record for each customer_id is considered.
 Groups the results by plan_name.
-WITH LatestData AS (
+
+_WITH LatestData AS (
 SELECT *
 ,ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY start_date DESC) as rn
 FROM subscriptions
@@ -2845,9 +2858,14 @@ ROUND((COUNT(customer_id)/(SELECT COUNT(DISTINCT customer_id) FROM LatestData))*
 FROM LatestData
 INNER JOIN plans as p on LatestData.plan_id = p.plan_id
 WHERE rn = 1
-GROUP BY plan_name;
-8. How many customers have upgraded to an annual plan in 2020?
-Explanation:
+GROUP BY plan_name;_
+
+
+
+
+**8. How many customers have upgraded to an annual plan in 2020?**
+
+**Explanation:**
 SELECT: Indicates that we are selecting data from the database.
 COUNT(DISTINCT customer_id): Counts the number of unique customer IDs. DISTINCT ensures that each customer is counted only once, even if they have multiple subscriptions.
 AS num_customers_upgraded: Renames the result column to “num_customers_upgraded” for clarity.
@@ -2858,27 +2876,33 @@ AND subscriptions.start_date >= ‘2020–01–01’: Further filters the data t
 AND subscriptions.start_date <= ‘2020–12–31’: Further filters the data to include only subscriptions that started on or before December 31, 2020.
 In summary, this query retrieves the count of unique customer IDs who upgraded to the ‘pro annual’ plan between January 1, 2020, and December 31, 2020.
 
-SELECT COUNT(DISTINCT customer_id) AS num_customers_upgraded
+_SELECT COUNT(DISTINCT customer_id) AS num_customers_upgraded
 FROM subscriptions
 JOIN plans ON subscriptions.plan_id = plans.plan_id
 WHERE plans.plan_name = 'pro annual'
 AND subscriptions.start_date >= '2020-01-01'
-AND subscriptions.start_date <= '2020-12-31';
-9. How many days on average does it take for a customer to upgrade to an annual plan from the day they join Foodie-Fi?
-Explanation:
-Common Table Expression (CTE) — annual_plan_customers:
+AND subscriptions.start_date <= '2020-12-31';_
 
+
+
+
+**9. How many days on average does it take for a customer to upgrade to an annual plan from the day they join Foodie-Fi?**
+
+**Explanation:**
+
+Common Table Expression (CTE) — annual_plan_customers:
 WITH annual_plan_customers AS (…): Defines a CTE named annual_plan_customers.
 SELECT s.customer_id, MIN(s.start_date) AS join_date, …: Selects the customer_id and the minimum start_date from the subscriptions table and assigns it as join_date.
 MIN(CASE WHEN p.plan_name = ‘pro annual’ THEN s.start_date END) AS annual_plan_date: Utilizes a conditional aggregation to find the minimum start_date for the ‘pro annual’ plan and assigns it as annual_plan_date.
 FROM subscriptions s JOIN plans p ON s.plan_id = p.plan_id: Joins the subscriptions and plans tables based on the plan_id.
 GROUP BY s.customer_id: Groups the data by customer_id.
-Main Query:
 
+Main Query:
 SELECT ROUND(AVG(DATEDIFF(annual_plan_date, join_date)), 0) AS average_days_to_upgrade: Calculates the average number of days it takes for customers to upgrade to the ‘pro annual’ plan. It does so by taking the difference between the annual_plan_date and join_date, calculating the average using AVG(), and rounding it to the nearest whole number using ROUND().
 FROM annual_plan_customers: Specifies the source of data as the annual_plan_customers CTE.
 WHERE annual_plan_date IS NOT NULL: Filters out any records where the annual_plan_date is null, ensuring that only customers who upgraded to the 'pro annual' plan are considered.
- WITH annual_plan_customers AS (
+
+ _WITH annual_plan_customers AS (
     SELECT 
         s.customer_id,
         MIN(s.start_date) AS join_date,
@@ -2895,25 +2919,32 @@ SELECT
 FROM 
     annual_plan_customers
 WHERE 
-    annual_plan_date IS NOT NULL;
-10. Can you further break down this average value into 30-day periods (i.e., 0–30 days, 31–60 days, etc.)?
-Explanation:
-Common Table Expression (CTE) — annual_plan_customers:
+    annual_plan_date IS NOT NULL;_
 
+
+
+
+    
+**10. Can you further break down this average value into 30-day periods (i.e., 0–30 days, 31–60 days, etc.)?**
+**Explanation:**
+
+Common Table Expression (CTE) — annual_plan_customers:
 WITH annual_plan_customers AS (…): Defines a CTE named annual_plan_customers.
 SELECT s.customer_id, MIN(s.start_date) AS join_date, …: Selects the customer_id and the minimum start_date from the subscriptions table and assigns it as join_date.
 MIN(CASE WHEN p.plan_name = ‘pro annual’ THEN s.start_date END) AS annual_plan_date: Utilizes a conditional aggregation to find the minimum start_date for the ‘pro annual’ plan and assigns it as annual_plan_date.
 FROM subscriptions s JOIN plans p ON s.plan_id = p.plan_id: Joins the subscriptions and plans tables based on the plan_id.
 GROUP BY s.customer_id: Groups the data by customer_id.
-Main Query:
 
+Main Query:
 SELECT CASE … END AS period, …: Utilizes a CASE statement to categorize the difference between annual_plan_date and join_date into different periods (‘0–30 days’, ‘31–60 days’, ‘61–90 days’, ‘> 90 days’).
 COUNT(*) AS num_customers: Counts the number of customers in each period.
 ROUND(AVG(DATEDIFF(annual_plan_date, join_date)), 2) AS average_days_to_upgrade: Calculates the average number of days it takes for customers to upgrade to the ‘pro annual’ plan within each period and rounds it to 2 decimal places.
 FROM annual_plan_customers WHERE annual_plan_date IS NOT NULL: Specifies the source of data as the annual_plan_customers CTE and filters out any records where the annual_plan_date is null.
 GROUP BY period: Groups the results by the defined periods.
 ORDER BY MIN(DATEDIFF(annual_plan_date, join_date)): Orders the results by the minimum difference between annual_plan_date and join_date within each period.
-WITH annual_plan_customers AS (
+
+
+_WITH annual_plan_customers AS (
     SELECT 
         s.customer_id,
         MIN(s.start_date) AS join_date,
@@ -2941,9 +2972,17 @@ WHERE
 GROUP BY 
     period
 ORDER BY 
-    MIN(DATEDIFF(annual_plan_date, join_date));
-11. How many customers were downgraded from a pro monthly plan to a basic monthly plan in 2020?
-Explanation:
+    MIN(DATEDIFF(annual_plan_date, join_date));_
+
+
+
+
+
+    
+**11. How many customers were downgraded from a pro monthly plan to a basic monthly plan in 2020?**
+
+
+**Explanation:**
 SELECT COUNT(DISTINCT s1.customer_id) AS num_customers_downgraded: Counts the number of distinct customer_ids who downgraded from the ‘pro monthly’ plan to the ‘basic monthly’ plan.
 FROM subscriptions AS s1: Specifies the subscriptions table as the data source and aliases it as ‘s1’.
 JOIN subscriptions AS s2 ON s1.customer_id = s2.customer_id: Joins the subscriptions table with itself based on the customer_id to find customers who have subscribed more than once.
@@ -2952,7 +2991,9 @@ JOIN plans AS p2 ON s2.plan_id = p2.plan_id: Joins the plans table with the ‘s
 WHERE p1.plan_name = ‘pro monthly’ AND p2.plan_name = ‘basic monthly’: Filters the data to include only subscriptions where the initial plan is ‘pro monthly’ and the subsequent plan is ‘basic monthly’.
 AND s1.start_date >= ‘2020–01–01’ AND s1.start_date <= ‘2020–12–31’: Filters the data to include only subscriptions that started between January 1, 2020, and December 31, 2020.
 AND s2.start_date > s1.start_date: Ensures that the start date of the ‘basic monthly’ plan is after the start date of the ‘pro monthly’ plan, indicating a downgrade.
-SELECT COUNT(DISTINCT s1.customer_id) AS num_customers_downgraded
+
+
+_SELECT COUNT(DISTINCT s1.customer_id) AS num_customers_downgraded
 FROM subscriptions AS s1
 JOIN subscriptions AS s2 ON s1.customer_id = s2.customer_id
 JOIN plans AS p1 ON s1.plan_id = p1.plan_id
@@ -2961,7 +3002,9 @@ WHERE p1.plan_name = 'pro monthly'
 AND p2.plan_name = 'basic monthly'
 AND s1.start_date >= '2020-01-01'
 AND s1.start_date <= '2020-12-31'
-AND s2.start_date > s1.start_date;
+AND s2.start_date > s1.start_date;_
+
+
 These SQL queries have provided invaluable insights into the subscription patterns of Foodie-Fi customers. By analyzing the average time taken to upgrade to an annual plan, breaking down the upgrade periods into manageable segments, and understanding the dynamics of customer plan downgrades, we’ve gained a deeper understanding of customer behavior. Armed with these insights, Foodie-Fi can make informed decisions to optimize its subscription offerings and enhance customer satisfaction. As data continues to drive innovation and decision-making in the digital landscape, mastering SQL queries remains an essential skill for businesses looking to thrive in the competitive subscription economy.”
 
 
